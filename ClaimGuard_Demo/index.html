@@ -836,6 +836,9 @@
           <button type="button" class="btn btn-primary" id="submitLiveBtn" style="width:100%; justify-content:center;">
             ⚡ Analyze Live with Gemini API
           </button>
+          <div style="font-size:0.72rem; color:var(--text-muted); background:var(--bg-subtle); border:1px solid var(--border-light); border-radius:7px; padding:0.5rem 0.65rem; line-height:1.4;">
+            <strong>Demo Scope Note:</strong> Production runs Stage 2 on-prem with <code>DeepSeek V3 Pro</code> (HK VPC). For browser portability, this Live mode routes Stage 1 &amp; 2 via your Gemini API, followed by Stage 3 &amp; 4 deterministic JS checks.
+          </div>
           <div id="liveErrorBox" style="display:none; font-size:0.76rem; color:var(--danger-text); background:var(--danger-bg); padding:0.55rem; border-radius:7px; border:1px solid var(--danger-border);"></div>
         </div>
 
@@ -1218,6 +1221,8 @@
       simPanel.style.display = 'block';
       livePanel.classList.remove('visible');
       document.getElementById('leftPanelTitle').textContent = '1. Claim Queue (Simulated)';
+      document.getElementById('s1Model').textContent = 'Gemini 3.5 Flash';
+      document.getElementById('stage1').querySelector('.step-model').textContent = 'DeepSeek V3 Pro (VPC)';
       renderData(CASES[activeIndex]);
     });
 
@@ -1228,6 +1233,10 @@
       simPanel.style.display = 'none';
       livePanel.classList.add('visible');
       document.getElementById('leftPanelTitle').textContent = '1. Live Gemini Intake';
+      const selectedModel = document.getElementById('geminiModelSelect').value;
+      document.getElementById('s1Model').textContent = selectedModel;
+      document.getElementById('stage1').querySelector('.step-model').textContent = `${selectedModel} (Demo Sim)`;
+      document.getElementById('stage3ModelLabel').textContent = 'Deterministic JS Engine';
     });
 
     document.querySelectorAll('.claim-item').forEach(btn => {
