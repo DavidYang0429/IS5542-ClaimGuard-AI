@@ -1,0 +1,1487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ClaimGuard AI | Enterprise Multimodal Claims &amp; Fraud Triage</title>
+  <style>
+    :root {
+      --bg-canvas: #f1f5f9;
+      --bg-surface: #ffffff;
+      --bg-subtle: #f8fafc;
+      --bg-muted: #e2e8f0;
+      --border-light: #e2e8f0;
+      --border-medium: #cbd5e1;
+      --text-main: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #64748b;
+      --brand-primary: #1d4ed8;
+      --brand-primary-hover: #1e40af;
+      --brand-indigo: #4f46e5;
+      --brand-soft: #eff6ff;
+      --success-bg: #ecfdf5;
+      --success-text: #047857;
+      --success-border: #a7f3d0;
+      --warn-bg: #fffbeb;
+      --warn-text: #b45309;
+      --warn-border: #fde68a;
+      --danger-bg: #fef2f2;
+      --danger-text: #b91c1c;
+      --danger-border: #fecaca;
+      --shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
+      --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.06), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', 'SFMono-Regular', ui-monospace, Consolas, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-canvas);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Top Bar */
+    header {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border-light);
+      padding: 0.75rem 1.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      box-shadow: var(--shadow-sm);
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 11px;
+      background: linear-gradient(135deg, #1d4ed8, #4f46e5);
+      display: grid;
+      place-items: center;
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(29, 78, 216, 0.28);
+      flex-shrink: 0;
+    }
+
+    .brand-text h1 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+    }
+
+    .pill-badge {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.15rem 0.55rem;
+      border-radius: 999px;
+      background: var(--brand-soft);
+      color: var(--brand-primary);
+      border: 1px solid #bfdbfe;
+    }
+
+    .brand-text p {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+    }
+
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    /* Segmented Mode Switch */
+    .mode-switch {
+      display: inline-flex;
+      background: var(--bg-canvas);
+      padding: 3px;
+      border-radius: 9px;
+      border: 1px solid var(--border-light);
+    }
+
+    .mode-btn {
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-family: inherit;
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 0.4rem 0.8rem;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .mode-btn.active {
+      background: var(--bg-surface);
+      color: var(--brand-primary);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .dot-live {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #10b981;
+      display: inline-block;
+    }
+
+    .btn {
+      cursor: pointer;
+      border: 1px solid var(--border-medium);
+      background: var(--bg-surface);
+      color: var(--text-main);
+      padding: 0.45rem 0.9rem;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      font-family: inherit;
+      transition: all 0.16s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn:hover {
+      background: var(--bg-subtle);
+      border-color: #94a3b8;
+    }
+
+    .btn-primary {
+      background: var(--brand-primary);
+      border-color: var(--brand-primary);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(29, 78, 216, 0.25);
+    }
+
+    .btn-primary:hover {
+      background: var(--brand-primary-hover);
+      border-color: var(--brand-primary-hover);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* Main Workspace Layout */
+    main {
+      display: grid;
+      grid-template-columns: 330px 1fr 375px;
+      gap: 1.15rem;
+      padding: 1.25rem 1.75rem;
+      flex: 1;
+      max-width: 1640px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 1240px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 0.9rem 1.15rem;
+      border-bottom: 1px solid var(--border-light);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-subtle);
+    }
+
+    .card-header h2 {
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+    }
+
+    .card-body {
+      padding: 1.15rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      flex: 1;
+    }
+
+    /* Left Column: Scenario List + Live Gemini Uploader */
+    .claim-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .claim-item {
+      width: 100%;
+      text-align: left;
+      background: var(--bg-surface);
+      border: 1.5px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 0.85rem;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.16s ease;
+    }
+
+    .claim-item:hover {
+      border-color: #93c5fd;
+      background: var(--bg-subtle);
+    }
+
+    .claim-item.active {
+      border-color: var(--brand-primary);
+      background: var(--brand-soft);
+      box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.1);
+    }
+
+    .claim-item-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.35rem;
+    }
+
+    .claim-code {
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      font-weight: 700;
+      color: var(--brand-primary);
+    }
+
+    .tag {
+      font-size: 0.67rem;
+      font-weight: 700;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .tag-green { background: var(--success-bg); color: var(--success-text); border: 1px solid var(--success-border); }
+    .tag-amber { background: var(--warn-bg); color: var(--warn-text); border: 1px solid var(--warn-border); }
+    .tag-red { background: var(--danger-bg); color: var(--danger-text); border: 1px solid var(--danger-border); }
+
+    .claim-name {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 0.2rem;
+    }
+
+    .claim-sub {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Receipt Preview Card */
+    .receipt-box {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 0.9rem;
+    }
+
+    .receipt-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      border-bottom: 1px dashed var(--border-medium);
+      padding-bottom: 0.5rem;
+      margin-bottom: 0.65rem;
+    }
+
+    .fact-chip {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      border-left: 3px solid var(--brand-primary);
+      border-radius: 7px;
+      padding: 0.5rem 0.65rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .fact-chip.warn { border-left-color: #d97706; background: #fffbeb; }
+    .fact-chip.danger { border-left-color: #dc2626; background: #fef2f2; }
+
+    .fact-label {
+      font-size: 0.69rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .fact-value {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-top: 0.1rem;
+    }
+
+    /* Live Gemini Input Panel */
+    .live-panel {
+      display: none;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .live-panel.visible {
+      display: flex;
+    }
+
+    .upload-zone {
+      border: 2px dashed var(--border-medium);
+      border-radius: var(--radius-md);
+      padding: 1.15rem;
+      text-align: center;
+      background: var(--bg-subtle);
+      cursor: pointer;
+      transition: all 0.16s ease;
+    }
+
+    .upload-zone:hover {
+      border-color: var(--brand-primary);
+      background: var(--brand-soft);
+    }
+
+    .upload-preview {
+      max-width: 100%;
+      max-height: 150px;
+      border-radius: 8px;
+      margin-top: 0.6rem;
+      border: 1px solid var(--border-light);
+      display: none;
+    }
+
+    .field-group label {
+      display: block;
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      margin-bottom: 0.3rem;
+    }
+
+    .field-group textarea, .field-group select, .field-group input {
+      width: 100%;
+      border: 1px solid var(--border-medium);
+      border-radius: 8px;
+      padding: 0.55rem 0.75rem;
+      font-family: inherit;
+      font-size: 0.82rem;
+      color: var(--text-main);
+      background: var(--bg-surface);
+    }
+
+    .field-group input:user-invalid {
+      border-color: #dc2626;
+      background-color: #fef2f2;
+    }
+
+    .field-group input:user-valid {
+      border-color: #059669;
+    }
+
+    .error-msg {
+      display: none;
+      color: #dc2626;
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
+      font-weight: 600;
+    }
+
+    input:user-invalid + .error-msg {
+      display: block;
+    }
+
+    /* Center Column: 4-Stage Pipeline */
+    .stepper {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.75rem;
+    }
+
+    @media (max-width: 768px) {
+      .stepper { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .step-card {
+      background: var(--bg-subtle);
+      border: 1.5px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 0.8rem;
+      transition: all 0.22s ease;
+      position: relative;
+    }
+
+    .step-card.running {
+      border-color: var(--brand-primary);
+      background: var(--brand-soft);
+      box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.12);
+    }
+
+    .step-card.done {
+      border-color: #10b981;
+      background: #f0fdf4;
+    }
+
+    .step-tag {
+      font-size: 0.67rem;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: var(--brand-primary);
+      text-transform: uppercase;
+    }
+
+    .step-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin: 0.2rem 0;
+    }
+
+    .step-model {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    /* Evidence Chain Box */
+    .evidence-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+    }
+
+    .evidence-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.65rem;
+    }
+
+    .evidence-header h3 {
+      font-size: 0.86rem;
+      font-weight: 700;
+    }
+
+    .quote-block {
+      background: #f8fafc;
+      border-left: 3.5px solid var(--brand-indigo);
+      border-radius: 6px;
+      padding: 0.8rem 0.95rem;
+      font-size: 0.8rem;
+      color: var(--text-main);
+      line-height: 1.55;
+      margin-bottom: 0.8rem;
+    }
+
+    .mcp-trace {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .mcp-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-light);
+      border-radius: 6px;
+      padding: 0.45rem 0.7rem;
+      font-family: var(--font-mono);
+      font-size: 0.73rem;
+    }
+
+    .mcp-cmd { color: var(--brand-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .mcp-res { color: var(--success-text); font-weight: 600; flex-shrink: 0; }
+
+    /* Responsive Table (modern-web-guidance: responsive-table) */
+    .table-wrapper {
+      overflow: auto;
+      max-inline-size: 100%;
+      max-block-size: min(300px, 55vh);
+      container-type: inline-size;
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      background: var(--bg-surface);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 0.76rem;
+    }
+
+    caption {
+      text-align: left;
+      padding: 0.65rem 0.85rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      background: var(--bg-subtle);
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    thead {
+      position: sticky;
+      inset-block-start: 0;
+      z-index: 1;
+      background: var(--bg-subtle);
+    }
+
+    th, td {
+      padding: 0.55rem 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    tbody th {
+      position: sticky;
+      inset-inline-start: 0;
+      background: var(--bg-surface);
+      font-family: var(--font-mono);
+      color: var(--brand-primary);
+      font-weight: 700;
+    }
+
+    @container (width < 580px) {
+      table, thead, tbody, tr, th, td { display: block; }
+      thead { display: none; }
+      tr { margin-block-end: 0.85rem; border: 1px solid var(--border-light); border-radius: 8px; overflow: hidden; }
+      tbody th { position: sticky; inset-block-start: 0; z-index: 2; background: var(--bg-subtle); }
+      table {
+        --label-2: "Role in Pipeline";
+        --label-3: "Latency";
+        --label-4: "Deployment";
+      }
+      td:nth-child(2)::before { content: var(--label-2) ": "; font-weight: 700; color: var(--text-secondary); }
+      td:nth-child(3)::before { content: var(--label-3) ": "; font-weight: 700; color: var(--text-secondary); }
+      td:nth-child(4)::before { content: var(--label-4) ": "; font-weight: 700; color: var(--text-secondary); }
+    }
+
+    /* Right Column: Gauge, Payout & HITL Gate */
+    .gauge-card {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .gauge-svg {
+      width: 78px;
+      height: 78px;
+      flex-shrink: 0;
+      transform: rotate(-90deg);
+    }
+
+    .gauge-bg { fill: none; stroke: #e2e8f0; stroke-width: 8; }
+    .gauge-fill {
+      fill: none;
+      stroke: #10b981;
+      stroke-width: 8;
+      stroke-linecap: round;
+      stroke-dasharray: 201;
+      stroke-dashoffset: 185;
+      transition: stroke-dashoffset 0.6s ease, stroke 0.3s ease;
+    }
+
+    .gauge-wrapper {
+      position: relative;
+      width: 78px;
+      height: 78px;
+    }
+
+    .gauge-text {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      font-family: var(--font-mono);
+      font-weight: 800;
+      font-size: 1.15rem;
+    }
+
+    .calc-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 0.95rem;
+      font-size: 0.82rem;
+    }
+
+    .calc-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.4rem 0;
+      border-bottom: 1px dashed var(--border-light);
+      color: var(--text-secondary);
+    }
+
+    .calc-row strong { color: var(--text-main); }
+
+    .calc-row.total {
+      border-bottom: none;
+      padding-top: 0.65rem;
+      font-size: 0.96rem;
+      font-weight: 800;
+      color: var(--brand-primary);
+    }
+
+    .hitl-card {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+    }
+
+    .hitl-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.6rem;
+      margin-top: 0.85rem;
+    }
+
+    .audit-toast {
+      margin-top: 0.7rem;
+      padding: 0.55rem 0.7rem;
+      border-radius: 7px;
+      background: var(--brand-soft);
+      border: 1px solid #bfdbfe;
+      color: var(--brand-primary);
+      font-family: var(--font-mono);
+      font-size: 0.73rem;
+      display: none;
+    }
+
+    /* Dialogs (modern-web-guidance: light-dismiss-a-dialog) */
+    dialog {
+      margin: auto;
+      background: var(--bg-surface);
+      color: var(--text-main);
+      border: 1px solid var(--border-medium);
+      border-radius: 14px;
+      padding: 1.5rem;
+      max-width: 660px;
+      width: 92%;
+      box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+    }
+
+    dialog::backdrop {
+      background-color: rgba(15, 23, 42, 0.45);
+      backdrop-filter: blur(3px);
+    }
+
+    .json-pre {
+      background: #0f172a;
+      color: #e2e8f0;
+      border-radius: 10px;
+      padding: 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      overflow-x: auto;
+      margin-top: 0.85rem;
+      max-height: 360px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <div class="brand-icon" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <path d="m9 12 2 2 4-4"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <h1>
+          ClaimGuard AI
+          <span class="pill-badge">CityU IS5542 Prototype</span>
+        </h1>
+        <p>HK Medical &amp; Auto Multimodal Claims Triage Workbench • Anchored in IA / HKFI / ICAC Typologies</p>
+      </div>
+    </div>
+
+    <div class="header-controls">
+      <div class="mode-switch" role="group" aria-label="Demo Mode Switch">
+        <button type="button" class="mode-btn active" id="modeSimBtn">Simulated Scenarios (3)</button>
+        <button type="button" class="mode-btn" id="modeLiveBtn"><span class="dot-live"></span> Live Gemini API</button>
+      </div>
+
+      <button class="btn" id="openKeyBtn" type="button">⚙ Gemini API Key</button>
+      <button class="btn" id="openSchemaBtn" type="button">{ } JSON Audit</button>
+      <button class="btn btn-primary" id="runPipelineBtn" type="button">▶ Run 4-Stage Harness</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Column 1: Intake Queue or Live Gemini Upload -->
+    <section class="card" aria-label="Claims Intake">
+      <div class="card-header">
+        <h2 id="leftPanelTitle">1. Claim Queue (Simulated)</h2>
+        <span class="pill-badge" id="tatBadge">1.42s</span>
+      </div>
+      <div class="card-body">
+        <!-- Offline Simulated Queue -->
+        <div id="simQueuePanel">
+          <div class="claim-list">
+            <button type="button" class="claim-item active" data-case="0">
+              <div class="claim-item-top">
+                <span class="claim-code">CLM-2026-8841</span>
+                <span class="tag tag-green">STP Auto-Approve</span>
+              </div>
+              <div class="claim-name">Outpatient Gastro — HK Sanatorium</div>
+              <div class="claim-sub"><span>Claimed: HK$2,450</span><span>Risk: 8/100</span></div>
+            </button>
+
+            <button type="button" class="claim-item" data-case="1">
+              <div class="claim-item-top">
+                <span class="claim-code">CLM-2026-8849</span>
+                <span class="tag tag-amber">HITL Clause Alert</span>
+              </div>
+              <div class="claim-name">Inpatient Lumbar MRI — St. Paul's</div>
+              <div class="claim-sub"><span>Claimed: HK$18,600</span><span>Risk: 52/100</span></div>
+            </button>
+
+            <button type="button" class="claim-item" data-case="2">
+              <div class="claim-item-top">
+                <span class="claim-code">CLM-2026-8902</span>
+                <span class="tag tag-red">ICAC-Style Fraud Freeze</span>
+              </div>
+              <div class="claim-name">Auto Collision + Altered Receipt</div>
+              <div class="claim-sub"><span>Claimed: HK$46,800</span><span>Risk: 94/100</span></div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Live Gemini Uploader -->
+        <div id="liveUploadPanel" class="live-panel">
+          <div class="upload-zone" id="dropZone" tabindex="0" role="button" aria-label="Upload medical receipt or crash photo">
+            <div style="font-size:0.85rem; font-weight:700; color:var(--brand-primary);">+ Upload Receipt / Claim Image</div>
+            <div style="font-size:0.74rem; color:var(--text-muted); margin-top:0.2rem;">Supports JPG, PNG, WebP (analyzed live by Gemini)</div>
+            <input type="file" id="fileInput" accept="image/*" hidden />
+            <img id="uploadPreview" class="upload-preview" alt="Uploaded claim document preview" />
+          </div>
+
+          <div class="field-group">
+            <label for="liveClaimText">Additional Claim Description / Clinical Note</label>
+            <textarea id="liveClaimText" rows="3" placeholder="e.g. Outpatient visit at Central clinic for acute bronchitis on 2026-11-10. Total HK$1,800."></textarea>
+          </div>
+
+          <div class="field-group">
+            <label for="geminiModelSelect">Gemini Model</label>
+            <select id="geminiModelSelect">
+              <option value="gemini-2.5-flash" selected>gemini-2.5-flash (Live Google API • Default)</option>
+              <option value="gemini-2.5-pro">gemini-2.5-pro (Live Deep Reasoning)</option>
+              <option value="gemini-3.5-flash">Gemini 3.5 Flash (Course Spec ID)</option>
+              <option value="gemini-4-hydrogen">Gemini 4 Hydrogen (Course Spec ID)</option>
+            </select>
+          </div>
+
+          <button type="button" class="btn btn-primary" id="submitLiveBtn" style="width:100%; justify-content:center;">
+            ⚡ Analyze Live with Gemini API
+          </button>
+          <div id="liveErrorBox" style="display:none; font-size:0.76rem; color:var(--danger-text); background:var(--danger-bg); padding:0.55rem; border-radius:7px; border:1px solid var(--danger-border);"></div>
+        </div>
+
+        <!-- Extracted Facts Preview -->
+        <div class="receipt-box">
+          <div class="receipt-header">
+            <span id="docTypeLabel">MULTIMODAL EXTRACTION</span>
+            <span style="color:var(--brand-primary);" id="visionModelTag">Gemini Flash</span>
+          </div>
+          <div id="factsContainer"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Column 2: 4-Stage Deterministic Harness -->
+    <section class="card" aria-label="Agentic Execution Harness">
+      <div class="card-header">
+        <h2>2. Four-Stage Deterministic Agent Harness</h2>
+        <span id="pipelineStatusText" style="font-size:0.74rem; font-weight:700; color:var(--success-text); font-family:var(--font-mono);">● VERIFIED</span>
+      </div>
+      <div class="card-body">
+        <div class="stepper">
+          <div class="step-card done" id="stage0">
+            <div class="step-tag">Stage 1 • Vision</div>
+            <div class="step-title">Fact Extraction</div>
+            <div class="step-model" id="s1Model">Gemini 3.5 Flash</div>
+          </div>
+          <div class="step-card done" id="stage1">
+            <div class="step-tag">Stage 2 • MCP + RAG</div>
+            <div class="step-title">Rule Validation</div>
+            <div class="step-model">DeepSeek V3 Pro (VPC)</div>
+          </div>
+          <div class="step-card done" id="stage2">
+            <div class="step-tag">Stage 3 • Reasoning</div>
+            <div class="step-title">Risk &amp; Payout</div>
+            <div class="step-model" id="stage3ModelLabel">DeepSeek V3 Pro (VPC)</div>
+          </div>
+          <div class="step-card done" id="stage3">
+            <div class="step-tag">Stage 4 • Gate</div>
+            <div class="step-title">Schema &amp; HITL</div>
+            <div class="step-model">Pydantic + Auth</div>
+          </div>
+        </div>
+
+        <div class="evidence-box">
+          <div class="evidence-header">
+            <h3>Grounded Policy Evidence Chain</h3>
+            <span class="pill-badge" id="clauseIdBadge">Policy #HK-MED-2026 • Sec 4.2(a)</span>
+          </div>
+          <div class="quote-block" id="clauseQuoteBox"></div>
+          <div class="mcp-trace" id="mcpToolCalls"></div>
+        </div>
+
+        <!-- Responsive Table -->
+        <div tabindex="0" role="region" aria-labelledby="routing-table-caption" class="table-wrapper">
+          <table>
+            <caption id="routing-table-caption">Hybrid 3-Tier Model Routing (HK PCPD Compliance &amp; Cost Trade-Off)</caption>
+            <thead>
+              <tr>
+                <th>Model Tier</th>
+                <th>Role in Pipeline</th>
+                <th>Latency</th>
+                <th>Deployment</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th>Gemini 3.5 Flash</th>
+                <td>Native Multimodal OCR &amp; Tamper Forensics (100% intake)</td>
+                <td>~0.55s TTFT</td>
+                <td>Google Gemini API</td>
+              </tr>
+              <tr>
+                <th>DeepSeek V3 Pro</th>
+                <td>MCP Policy Alignment &amp; Payout Calc (80% standard traffic)</td>
+                <td>~0.42s TTFT</td>
+                <td>On-Prem HK VPC (PCPD)</td>
+              </tr>
+              <tr>
+                <th>Gemini 4 Hydrogen</th>
+                <td>Complex Pre-Existing &amp; Fraud Reasoning (20% escalated)</td>
+                <td>~2.10s TTFT</td>
+                <td>Redacted Enterprise Node</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Column 3: Risk Gauge, Payout & HITL Gate -->
+    <section class="card" aria-label="Decision and Authority Gate">
+      <div class="card-header">
+        <h2>3. Risk Triage &amp; Authority Gate</h2>
+        <span style="font-size:0.72rem; color:var(--text-muted); font-weight:600;">NIST AI RMF</span>
+      </div>
+      <div class="card-body">
+        <div class="gauge-card">
+          <div class="gauge-wrapper">
+            <svg class="gauge-svg" viewBox="0 0 78 78">
+              <circle class="gauge-bg" cx="39" cy="39" r="32"></circle>
+              <circle class="gauge-fill" id="gaugeArc" cx="39" cy="39" r="32"></circle>
+            </svg>
+            <div class="gauge-text" id="riskScoreNum">8</div>
+          </div>
+          <div>
+            <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; color:var(--text-muted);">Fraud &amp; Policy Risk (0–100)</div>
+            <div id="decisionHeadline" style="font-size:0.95rem; font-weight:700; margin-top:0.15rem;">STP Approved</div>
+            <div id="decisionSub" style="font-size:0.76rem; color:var(--text-secondary); margin-top:0.15rem;"></div>
+          </div>
+        </div>
+
+        <div class="calc-card">
+          <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:0.4rem;">Deterministic Payout Calculation</div>
+          <div class="calc-row"><span>Submitted Amount</span><strong id="calcSubmitted">HK$2,450.00</strong></div>
+          <div class="calc-row"><span>Deductible / Exclusion</span><strong id="calcDeductible">- HK$200.00</strong></div>
+          <div class="calc-row"><span>Co-Insurance Rate</span><strong id="calcCoinsurance">90%</strong></div>
+          <div class="calc-row total"><span>Approved Payout</span><span id="calcFinal">HK$2,025.00</span></div>
+        </div>
+
+        <div class="hitl-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.45rem;">
+            <strong style="font-size:0.84rem;">Authority Containment</strong>
+            <span class="tag tag-green" id="hitlBadge">AUTO-AUTHORIZED</span>
+          </div>
+          <p id="hitlDesc" style="font-size:0.78rem; color:var(--text-secondary); line-height:1.45;"></p>
+          <div class="hitl-actions">
+            <button type="button" class="btn btn-primary" id="approveBtn" style="justify-content:center;">✓ Sign &amp; Approve</button>
+            <button type="button" class="btn" id="escalateBtn" style="justify-content:center;">⚑ Escalate SIU</button>
+          </div>
+          <div id="actionFeedback" class="audit-toast"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- JSON Audit Modal (light-dismiss-a-dialog) -->
+  <dialog id="auditModal" closedby="any" aria-labelledby="auditModalTitle">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <h2 id="auditModalTitle" style="font-size:1.02rem;">Deterministic JSON Schema &amp; Provenance Contract</h2>
+      <form method="dialog"><button type="submit" class="btn">Close (Esc)</button></form>
+    </div>
+    <p style="font-size:0.8rem; color:var(--text-secondary); margin-top:0.4rem;">
+      All outputs adhere to a strict JSON schema with verbatim policy citations, preventing Air Canada-style ungrounded promises.
+    </p>
+    <pre class="json-pre" id="jsonSchemaOutput"></pre>
+  </dialog>
+
+  <!-- Gemini API Key Modal (light-dismiss-a-dialog + validate-input-after-interaction) -->
+  <dialog id="keyModal" closedby="any" aria-labelledby="keyModalTitle">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <h2 id="keyModalTitle" style="font-size:1.02rem;">Configure Live Google Gemini API Key</h2>
+      <form method="dialog"><button type="submit" class="btn">Close</button></form>
+    </div>
+    <p style="font-size:0.8rem; color:var(--text-secondary); margin:0.5rem 0 0.9rem;">
+      Your API key is stored only in browser <code>sessionStorage</code> for this presentation session and is never saved to disk.
+    </p>
+    <form id="keyForm">
+      <div class="field-group">
+        <label for="apiKeyInput">Google Gemini API Key</label>
+        <input
+          type="password"
+          id="apiKeyInput"
+          required
+          minlength="10"
+          placeholder="Paste your Gemini API Key..."
+          autocomplete="off"
+        />
+        <div class="error-msg">❌ Please enter a valid API key (at least 10 characters).</div>
+      </div>
+      <div style="display:flex; gap:0.6rem; justify-content:flex-end; margin-top:1rem;">
+        <button type="button" class="btn" id="clearKeyBtn">Clear Key</button>
+        <button type="submit" class="btn btn-primary">Save for Session</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script>
+    const CASES = [
+      {
+        id: "CLM-2026-8841",
+        docType: "BILINGUAL RECEIPT + HANDWRITTEN NOTE",
+        tat: "1.42s",
+        stage3Model: "DeepSeek V3 Pro (VPC)",
+        clauseId: "Policy #HK-MED-2026 • Sec 4.2(a)",
+        clauseQuote: "\"Section 4.2(a) Outpatient Benefits: Medically necessary consultation, diagnostic lab tests, and prescribed medication for acute illness at a Registered HK Hospital are covered at 90% after a HK$200 per-visit deductible, up to HK$3,500 per visit.\"",
+        facts: [
+          { label: "Provider & Visit Date", val: "HK Sanatorium & Hospital • 2026-10-29", cls: "" },
+          { label: "Handwritten Diagnosis (ICD-10)", val: "Acute Gastroenteritis (A09) — Dr. W. K. Lam", cls: "" },
+          { label: "Itemized Charges", val: "Consult HK$950 + IV & Meds HK$1,500 = HK$2,450", cls: "" },
+          { label: "Forensic Integrity", val: "EXIF intact • Zero pixel tampering detected", cls: "" }
+        ],
+        mcpCalls: [
+          { tool: "mcp://hk-med-reg/verify?reg=M14902", res: "200 OK • Active" },
+          { tool: "mcp://policy-rag/clause?icd=A09", res: "Sec 4.2(a) (0.96)" },
+          { tool: "mcp://ifpcd-sync/check_dup?inv=992814", res: "0 Duplicates" }
+        ],
+        riskScore: 8,
+        riskColor: "#10b981",
+        headline: "Straight-Through Approved",
+        sub: "Payout < HK$5,000 & Risk < 20 • Automated",
+        submitted: "HK$2,450.00",
+        deductible: "- HK$200.00",
+        coinsurance: "90% of HK$2,250",
+        finalPayout: "HK$2,025.00",
+        hitlBadge: "AUTO-AUTHORIZED (STP)",
+        hitlClass: "tag tag-green",
+        hitlDesc: "Low-risk outpatient claim satisfies all deterministic rules. Payment queued automatically.",
+        jsonContract: {
+          claim_id: "CLM-2026-8841",
+          mode: "SIMULATED_SCENARIO",
+          models: ["gemini-3.5-flash", "deepseek-v3-pro-vpc"],
+          extracted: { icd10: "A09", provider: "HK Sanatorium", billed_hkd: 2450 },
+          citation: { policy: "HK-MED-2026", section: "4.2(a)", abstained: false },
+          payout: { deductible: 200, copay: 0.9, approved_hkd: 2025 },
+          authority_gate: { stp_eligible: true, human_signature_required: false }
+        }
+      },
+      {
+        id: "CLM-2026-8849",
+        docType: "DISCHARGE SUMMARY + MRI INVOICE",
+        tat: "3.15s",
+        stage3Model: "Gemini 4 Hydrogen",
+        clauseId: "Policy #HK-MED-2026 • Sec 7.3(b)",
+        clauseQuote: "\"Section 7.3(b) Pre-Existing Condition Exclusion: Any spinal disorder or related medical condition diagnosed or treated within 24 months prior to Policy Effective Date (2025-06-01) is excluded during the first 18 months.\"",
+        facts: [
+          { label: "Provider & Total", val: "St. Paul's Hospital HK • Lumbar MRI + Ward = HK$18,600", cls: "" },
+          { label: "Clinical Note Extraction", val: "\"Recurrent L4-L5 disc herniation; prior episode in 2024\"", cls: "warn" },
+          { label: "Historical Cross-Check", val: "Overlaps pre-inception period (Policy start: 2025-06-01)", cls: "warn" }
+        ],
+        mcpCalls: [
+          { tool: "mcp://claims-hist/member?id=HKID-882", res: "2024-03 Physio Hit" },
+          { tool: "mcp://policy-rag/exclusions?plan=HK-MED", res: "Matched Sec 7.3(b)" },
+          { tool: "mcp://auth-gate/lock?claim=8849", res: "LOCKED (>HK$5,000)" }
+        ],
+        riskScore: 52,
+        riskColor: "#d97706",
+        headline: "Escalated to Human Adjuster",
+        sub: "Pre-existing condition flag • Zero auto-rejection",
+        submitted: "HK$18,600.00",
+        deductible: "- HK$18,600.00 (Excluded)",
+        coinsurance: "0% Eligible",
+        finalPayout: "HK$0.00 (Pending Review)",
+        hitlBadge: "HUMAN SIGN-OFF REQUIRED",
+        hitlClass: "tag tag-amber",
+        hitlDesc: "Agent locked auto-payout and drafted an exclusion brief citing Sec 7.3(b). Licensed human adjuster must verify before notifying policyholder.",
+        jsonContract: {
+          claim_id: "CLM-2026-8849",
+          mode: "SIMULATED_SCENARIO",
+          models: ["gemini-3.5-flash", "deepseek-v3-pro-vpc", "gemini-4-hydrogen"],
+          extracted: { icd10: "M51.26", prior_claim_date: "2024-03-14", policy_start: "2025-06-01" },
+          citation: { policy: "HK-MED-2026", section: "7.3(b)", abstained: false },
+          payout: { billed_hkd: 18600, approved_hkd: 0, status: "PENDING_HUMAN_REVIEW" }
+        }
+      },
+      {
+        id: "CLM-2026-8902",
+        docType: "CRASH PHOTOS + SCANNED CLINIC RECEIPT",
+        tat: "2.68s",
+        stage3Model: "Gemini 4 Hydrogen",
+        clauseId: "Policy #HK-AUTO-2026 • Sec 11.1",
+        clauseQuote: "\"Section 11.1 Fraudulent Claims (HK IA GL10 Aligned): Submission of any altered medical invoice or recycled accident image voids claim benefits and triggers referral to SIU / HKFI IFPCD.\"",
+        facts: [
+          { label: "OCR vs Pixel Forensics", val: "HK$46,800 — Trailing '0' shows JPEG clone artifact (Orig: HK$4,680)", cls: "danger" },
+          { label: "EXIF Metadata Audit", val: "Adobe Photoshop 2026 • Timestamp 4 days BEFORE crash", cls: "danger" },
+          { label: "Perceptual Hash Match", val: "Bumper photo matches 2025 claim #CLM-2025-1104 (99.4%)", cls: "danger" }
+        ],
+        mcpCalls: [
+          { tool: "mcp://forensics/ela?file=receipt.jpg", res: "TAMPERED (p=0.992)" },
+          { tool: "mcp://ifpcd-graph/phash?h=8f9e2a", res: "MATCH: 2025 Claim" },
+          { tool: "mcp://auth-gate/freeze?claim=8902", res: "HARD FREEZE -> SIU" }
+        ],
+        riskScore: 94,
+        riskColor: "#dc2626",
+        headline: "HARD FREEZE — SIU Referral",
+        sub: "ICAC-style receipt forgery & recycled photo detected",
+        submitted: "HK$46,800.00",
+        deductible: "- HK$46,800.00 (Frozen)",
+        coinsurance: "Suspended",
+        finalPayout: "HK$0.00 (FROZEN)",
+        hitlBadge: "SIU FRAUD LOCK",
+        hitlClass: "tag tag-red",
+        hitlDesc: "Multimodal forensics flagged 10x invoice tampering and duplicate crash imagery. Payout API physically locked.",
+        jsonContract: {
+          claim_id: "CLM-2026-8902",
+          mode: "SIMULATED_SCENARIO",
+          forensic_flags: ["ELA_DIGIT_TAMPER", "EXIF_PHOTOSHOP", "DUPLICATE_IMAGE_HASH"],
+          citation: { policy: "HK-AUTO-2026", section: "11.1" },
+          authority_gate: { payout_api_locked: true, siu_referral: true }
+        }
+      }
+    ];
+
+    let activeIndex = 0;
+    let isLiveMode = false;
+    let uploadedBase64 = null;
+    let uploadedMime = null;
+
+    function renderData(c) {
+      document.getElementById('tatBadge').textContent = c.tat;
+      document.getElementById('docTypeLabel').textContent = c.docType;
+      document.getElementById('stage3ModelLabel').textContent = c.stage3Model;
+      document.getElementById('clauseIdBadge').textContent = c.clauseId;
+      document.getElementById('clauseQuoteBox').textContent = c.clauseQuote;
+
+      document.getElementById('factsContainer').innerHTML = c.facts.map(f => `
+        <div class="fact-chip ${f.cls}">
+          <div class="fact-label">${f.label}</div>
+          <div class="fact-value">${f.val}</div>
+        </div>
+      `).join('');
+
+      document.getElementById('mcpToolCalls').innerHTML = c.mcpCalls.map(m => `
+        <div class="mcp-row">
+          <span class="mcp-cmd">${m.tool}</span>
+          <span class="mcp-res">${m.res}</span>
+        </div>
+      `).join('');
+
+      // Animate SVG Gauge (circumference = 2 * pi * 32 = 201)
+      const arc = document.getElementById('gaugeArc');
+      const offset = 201 - (201 * Math.min(100, Math.max(0, c.riskScore))) / 100;
+      arc.style.strokeDashoffset = offset;
+      arc.style.stroke = c.riskColor;
+
+      const scoreEl = document.getElementById('riskScoreNum');
+      scoreEl.textContent = c.riskScore;
+      scoreEl.style.color = c.riskColor;
+
+      document.getElementById('decisionHeadline').textContent = c.headline;
+      document.getElementById('decisionSub').textContent = c.sub;
+      document.getElementById('calcSubmitted').textContent = c.submitted;
+      document.getElementById('calcDeductible').textContent = c.deductible;
+      document.getElementById('calcCoinsurance').textContent = c.coinsurance;
+      document.getElementById('calcFinal').textContent = c.finalPayout;
+
+      const badge = document.getElementById('hitlBadge');
+      badge.textContent = c.hitlBadge;
+      badge.className = c.hitlClass;
+      document.getElementById('hitlDesc').textContent = c.hitlDesc;
+      document.getElementById('actionFeedback').style.display = 'none';
+      document.getElementById('jsonSchemaOutput').textContent = JSON.stringify(c.jsonContract, null, 2);
+    }
+
+    function animatePipeline(tatText) {
+      const stages = [0, 1, 2, 3].map(i => document.getElementById('stage' + i));
+      const statusText = document.getElementById('pipelineStatusText');
+      stages.forEach(s => s.classList.remove('done', 'running'));
+      statusText.textContent = "⟳ EXECUTING HARNESS...";
+      statusText.style.color = "var(--brand-primary)";
+
+      stages.forEach((el, idx) => {
+        setTimeout(() => {
+          if (idx > 0) {
+            stages[idx - 1].classList.remove('running');
+            stages[idx - 1].classList.add('done');
+          }
+          el.classList.add('running');
+        }, idx * 240);
+      });
+
+      setTimeout(() => {
+        stages[3].classList.remove('running');
+        stages[3].classList.add('done');
+        statusText.textContent = `● VERIFIED (${tatText})`;
+        statusText.style.color = "var(--success-text)";
+      }, 4 * 240);
+    }
+
+    // Mode Switching
+    const simBtn = document.getElementById('modeSimBtn');
+    const liveBtn = document.getElementById('modeLiveBtn');
+    const simPanel = document.getElementById('simQueuePanel');
+    const livePanel = document.getElementById('liveUploadPanel');
+
+    simBtn.addEventListener('click', () => {
+      isLiveMode = false;
+      simBtn.classList.add('active');
+      liveBtn.classList.remove('active');
+      simPanel.style.display = 'block';
+      livePanel.classList.remove('visible');
+      document.getElementById('leftPanelTitle').textContent = '1. Claim Queue (Simulated)';
+      renderData(CASES[activeIndex]);
+    });
+
+    liveBtn.addEventListener('click', () => {
+      isLiveMode = true;
+      liveBtn.classList.add('active');
+      simBtn.classList.remove('active');
+      simPanel.style.display = 'none';
+      livePanel.classList.add('visible');
+      document.getElementById('leftPanelTitle').textContent = '1. Live Gemini Intake';
+    });
+
+    document.querySelectorAll('.claim-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        activeIndex = Number(btn.getAttribute('data-case'));
+        document.querySelectorAll('.claim-item').forEach((b, i) => b.classList.toggle('active', i === activeIndex));
+        renderData(CASES[activeIndex]);
+        animatePipeline(CASES[activeIndex].tat);
+      });
+    });
+
+    document.getElementById('runPipelineBtn').addEventListener('click', () => {
+      if (isLiveMode) {
+        document.getElementById('submitLiveBtn').click();
+      } else {
+        animatePipeline(CASES[activeIndex].tat);
+      }
+    });
+
+    // File Upload Handling
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const previewImg = document.getElementById('uploadPreview');
+
+    dropZone.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      uploadedMime = file.type || 'image/jpeg';
+      const reader = new FileReader();
+      reader.onload = () => {
+        previewImg.src = reader.result;
+        previewImg.style.display = 'block';
+        uploadedBase64 = reader.result.split(',')[1];
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // Live Gemini API Execution
+    document.getElementById('submitLiveBtn').addEventListener('click', async () => {
+      const errBox = document.getElementById('liveErrorBox');
+      errBox.style.display = 'none';
+      const apiKey = sessionStorage.getItem('claimguard_gemini_key');
+      if (!apiKey) {
+        document.getElementById('keyModal').showModal();
+        return;
+      }
+
+      const textNote = document.getElementById('liveClaimText').value.trim();
+      if (!uploadedBase64 && !textNote) {
+        errBox.textContent = 'Please upload a receipt/photo or enter a claim description first.';
+        errBox.style.display = 'block';
+        return;
+      }
+
+      const model = document.getElementById('geminiModelSelect').value;
+      const submitBtn = document.getElementById('submitLiveBtn');
+      submitBtn.disabled = true;
+      submitBtn.textContent = '⏳ Calling Gemini API...';
+
+      const t0 = performance.now();
+      const POLICY_LIBRARY = `
+1) Policy #HK-MED-2026 • Sec 4.2(a) [Outpatient Benefits]: Medically necessary consultation, lab tests, and prescribed medication for acute illness at a Registered HK Clinic/Hospital are covered at 90% after a HK$200 per-visit deductible, up to HK$3,500 per visit.
+2) Policy #HK-MED-2026 • Sec 7.3(b) [Pre-Existing Exclusion]: Any spinal disorder or chronic condition diagnosed/treated within 24 months prior to Policy Effective Date (2025-06-01) is excluded during the first 18 months.
+3) Policy #HK-AUTO-2026 / #HK-MED-2026 • Sec 11.1 [Fraud & Alteration]: Any altered invoice, arithmetic mismatch between itemized charges and total, or missing/forged provider credentials voids benefits and triggers SIU referral.
+4) ABSTAIN_AND_ESCALATE: Trigger if image is blurry, unreadable, missing provider stamp/signature, or outside the 3 rules above.`;
+
+      const parts = [
+        {
+          text: `You are ClaimGuard AI, a strict HK insurance claims triage & anti-fraud harness.
+Analyze the uploaded receipt/photo and/or clinical note using these MANDATORY AUDIT RULES:
+1. ARITHMETIC CONSISTENCY: Extract every itemized charge, sum them into "itemized_sum_hkd", and compare against the printed Total ("claimed_hkd"). If itemized_sum_hkd > 0 and Math.abs(itemized_sum_hkd - claimed_hkd) > 1, you MUST flag an arithmetic discrepancy, set "arithmetic_mismatch": true, and set "risk_score" >= 85.
+2. VISUAL & CREDENTIAL FORENSICS: Inspect for mismatched font weights, misaligned digits, smudged/edited totals, missing doctor signature, or missing clinic stamp. Report findings in "forensic_observation".
+3. GROUNDED POLICY CITATION ONLY: You may ONLY cite from the Approved Policy Library below. NEVER invent policy sections. If unclear or unreadable, cite "ABSTAIN_AND_ESCALATE".
+Approved Policy Library:
+${POLICY_LIBRARY}
+
+Return ONLY valid JSON matching this exact schema:
+{
+  "provider": "string",
+  "diagnosis_or_incident": "string",
+  "itemized_sum_hkd": number,
+  "claimed_hkd": number,
+  "arithmetic_mismatch": boolean,
+  "has_signature_and_stamp": boolean,
+  "forensic_observation": "string",
+  "matched_policy_section": "Sec 4.2(a) | Sec 7.3(b) | Sec 11.1 | ABSTAIN_AND_ESCALATE",
+  "verbatim_policy_rule": "exact grounded explanation from the approved library",
+  "risk_score": number (0-100),
+  "decision_headline": "string"
+}
+User Note: ${textNote || "See attached image."}`
+        }
+      ];
+      if (uploadedBase64) {
+        parts.push({ inline_data: { mime_type: uploadedMime, data: uploadedBase64 } });
+      }
+
+      try {
+        const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts }],
+            generationConfig: { responseMimeType: 'application/json', temperature: 0.1 }
+          })
+        });
+
+        if (!resp.ok) {
+          const errData = await resp.json().catch(() => ({}));
+          throw new Error(errData?.error?.message || `HTTP ${resp.status}`);
+        }
+
+        const data = await resp.json();
+        const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        const parsed = JSON.parse(rawText);
+        const elapsed = ((performance.now() - t0) / 1000).toFixed(2) + 's';
+
+        // STAGE 3 & 4 DETERMINISTIC HARNESS OVERRIDES (Never trust raw LLM math or authority!)
+        const claimed = Number(parsed.claimed_hkd || 0);
+        const itemizedSum = Number(parsed.itemized_sum_hkd || 0);
+        const mathMismatch = Boolean(parsed.arithmetic_mismatch) || (itemizedSum > 0 && Math.abs(itemizedSum - claimed) > 1);
+
+        let risk = Number(parsed.risk_score) || 15;
+        if (mathMismatch) risk = Math.max(risk, 90);
+        if (parsed.has_signature_and_stamp === false) risk = Math.max(risk, 55);
+        if (parsed.matched_policy_section === "ABSTAIN_AND_ESCALATE") risk = Math.max(risk, 45);
+
+        const isFraud = risk >= 65 || mathMismatch || parsed.matched_policy_section === "Sec 11.1";
+        const requiresHuman = isFraud || risk >= 20 || claimed >= 5000 || parsed.matched_policy_section !== "Sec 4.2(a)";
+
+        // Deterministic Payout Calculator
+        let deductible = 0;
+        let approved = 0;
+        let coinsuranceLabel = "0% (Locked)";
+        if (!requiresHuman && parsed.matched_policy_section === "Sec 4.2(a)") {
+          deductible = Math.min(200, claimed);
+          approved = Math.min(3500, Math.max(0, (claimed - deductible) * 0.9));
+          coinsuranceLabel = "90% Covered (Max HK$3,500)";
+        } else if (isFraud) {
+          deductible = claimed;
+          coinsuranceLabel = "Suspended (Fraud Gate)";
+        } else {
+          coinsuranceLabel = "Pending Human Adjuster";
+        }
+
+        const isMed = !isFraud && requiresHuman;
+
+        renderData({
+          id: "LIVE-GEMINI-CLAIM",
+          docType: "LIVE GEMINI + DETERMINISTIC HARNESS",
+          tat: elapsed,
+          stage3Model: model,
+          clauseId: isFraud ? "Policy #HK-MED-2026 • Sec 11.1" : (parsed.matched_policy_section || "ABSTAIN_AND_ESCALATE"),
+          clauseQuote: parsed.verbatim_policy_rule || "Evaluated live against HK outpatient/auto policy constraints.",
+          facts: [
+            { label: "Provider", val: parsed.provider || "Detected from input", cls: "" },
+            { label: "Diagnosis / Incident", val: parsed.diagnosis_or_incident || "Extracted", cls: "" },
+            {
+              label: "Deterministic Arithmetic Check",
+              val: itemizedSum > 0 ? `Itemized Sum HK$${itemizedSum.toLocaleString()} vs Total HK$${claimed.toLocaleString()} (${mathMismatch ? "MISMATCH!" : "Verified"})` : `Total Claimed: HK$${claimed.toLocaleString()}`,
+              cls: mathMismatch ? "danger" : ""
+            },
+            { label: "Forensic & Credential Audit", val: parsed.forensic_observation || "Completed", cls: isFraud ? "danger" : (isMed ? "warn" : "") }
+          ],
+          mcpCalls: [
+            { tool: `https://generativelanguage.googleapis.com/.../${model}`, res: `200 OK (${elapsed})` },
+            { tool: "harness://math-guard/verify_sum", res: mathMismatch ? "FAIL: Arithmetic Tampering" : "PASS: Sum Consistent" },
+            { tool: "harness://authority-gate/check_stp", res: requiresHuman ? "LOCKED: HITL Sign-Off Required" : "PASS: STP Eligible (<HK$5k)" }
+          ],
+          riskScore: risk,
+          riskColor: isFraud ? "#dc2626" : (isMed ? "#d97706" : "#10b981"),
+          headline: isFraud ? "HARD FREEZE — Anomaly / Tampering Detected" : (requiresHuman ? "Escalated to Human Adjuster (HITL)" : "Straight-Through Approved (STP)"),
+          sub: `Live ${model} + Deterministic JS Gatekeeper`,
+          submitted: `HK$${claimed.toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
+          deductible: `- HK$${deductible.toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
+          coinsurance: coinsuranceLabel,
+          finalPayout: isFraud ? "HK$0.00 (FROZEN)" : (requiresHuman ? "HK$0.00 (Pending Review)" : `HK$${approved.toLocaleString(undefined, { minimumFractionDigits: 2 })}`),
+          hitlBadge: isFraud ? "SIU FRAUD LOCK" : (requiresHuman ? "HUMAN SIGN-OFF REQUIRED" : "AUTO-AUTHORIZED (STP)"),
+          hitlClass: isFraud ? "tag tag-red" : (isMed ? "tag tag-amber" : "tag tag-green"),
+          hitlDesc: isFraud
+            ? "Deterministic Harness locked payout API due to arithmetic mismatch or forensic anomaly."
+            : (requiresHuman ? "Authority Gate blocked auto-payout (>=HK$5,000, Risk >=20, or non-STP clause). Human adjuster sign-off mandatory." : "Passed arithmetic check, credential verification & Sec 4.2(a) deterministic payout formula."),
+          jsonContract: {
+            mode: "LIVE_GEMINI_WITH_DETERMINISTIC_HARNESS",
+            model,
+            latency: elapsed,
+            harness_overrides: { math_mismatch: mathMismatch, stp_eligible: !requiresHuman, deterministic_approved_hkd: approved },
+            llm_raw_extraction: parsed
+          }
+        });
+        animatePipeline(elapsed);
+      } catch (err) {
+        errBox.textContent = `Gemini API Error: ${err.message}`;
+        errBox.style.display = 'block';
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = '⚡ Analyze Live with Gemini API';
+      }
+    });
+
+    // HITL Buttons
+    document.getElementById('approveBtn').addEventListener('click', () => {
+      const fb = document.getElementById('actionFeedback');
+      fb.style.display = 'block';
+      fb.textContent = `[AUDIT ${new Date().toLocaleTimeString()}] Adjuster signed off decision. Record committed.`;
+    });
+
+    document.getElementById('escalateBtn').addEventListener('click', () => {
+      const fb = document.getElementById('actionFeedback');
+      fb.style.display = 'block';
+      fb.textContent = `[AUDIT ${new Date().toLocaleTimeString()}] Escalated to Senior Adjuster / SIU Queue.`;
+    });
+
+    // Modals & API Key Form
+    function setupLightDismiss(dialogEl) {
+      if (!('closedBy' in HTMLDialogElement.prototype)) {
+        dialogEl.addEventListener('click', (event) => {
+          if (event.target !== dialogEl) return;
+          const rect = dialogEl.getBoundingClientRect();
+          const inside = rect.top <= event.clientY && event.clientY <= rect.top + rect.height &&
+                         rect.left <= event.clientX && event.clientX <= rect.left + rect.width;
+          if (!inside) dialogEl.close();
+        });
+      }
+    }
+
+    const auditModal = document.getElementById('auditModal');
+    const keyModal = document.getElementById('keyModal');
+    setupLightDismiss(auditModal);
+    setupLightDismiss(keyModal);
+
+    document.getElementById('openSchemaBtn').addEventListener('click', () => auditModal.showModal());
+    document.getElementById('openKeyBtn').addEventListener('click', () => {
+      const existing = sessionStorage.getItem('claimguard_gemini_key');
+      if (existing) document.getElementById('apiKeyInput').value = existing;
+      keyModal.showModal();
+    });
+
+    document.getElementById('keyForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const val = document.getElementById('apiKeyInput').value.trim();
+      sessionStorage.setItem('claimguard_gemini_key', val);
+      keyModal.close();
+      liveBtn.click();
+    });
+
+    document.getElementById('clearKeyBtn').addEventListener('click', () => {
+      sessionStorage.removeItem('claimguard_gemini_key');
+      document.getElementById('apiKeyInput').value = '';
+      keyModal.close();
+    });
+
+    renderData(CASES[0]);
+  </script>
+</body>
+</html>
